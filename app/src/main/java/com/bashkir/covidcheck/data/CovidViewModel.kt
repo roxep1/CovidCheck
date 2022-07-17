@@ -22,20 +22,17 @@ class CovidViewModel @Inject constructor(private val service: CovidService) : Vi
     }
 
     fun getCountries() {
-        uiState = uiState.copy(countries = flow {
-            emit(Async.Loading)
-            emit(Async.Success(service.getCountries()))
-        }.catch { emit(Async.Error) })
+        uiState = uiState.copy(countries = load(service::getCountries))
     }
 
     fun getDaysStat(countryStats: CountryStats) {
-        uiState = uiState.copy(
-            detailStats = flow {
-                emit(Async.Loading)
-                emit(Async.Success(service.getCountryStats(countryStats)))
-            }.catch { emit(Async.Error) }
-        )
+        uiState = uiState.copy(detailStats = load { service.getCountryStats(countryStats) })
     }
+
+    private fun <T> load(getValue: suspend () -> T): Flow<Async<T>> = flow {
+        emit(Async.Loading)
+        emit(Async.Success(getValue()))
+    }.catch { emit(Async.Error) }
 }
 
 sealed class Async<out T> {

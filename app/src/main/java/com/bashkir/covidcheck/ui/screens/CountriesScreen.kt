@@ -46,7 +46,9 @@ fun CountriesScreen(navController: NavController, viewModel: CovidViewModel) =
                     is Async.Success -> (countries as Async.Success<List<CountryStats>>).value.let { stats ->
                         if (stats.isNotEmpty())
                             items(stats.filter {
-                                it.country.lowercase().contains(searchText.value.text)
+                                if (searchText.value.text.isNotBlank()) it.country.lowercase()
+                                    .contains(searchText.value.text.trim())
+                                else true
                             }) {
                                 CountryCard(stats = it) {
                                     viewModel.getDaysStat(it)
